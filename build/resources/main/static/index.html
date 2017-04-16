@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+    <title>Hello AngularJS</title>
+    <link href="https://fullcalendar.io/js/fullcalendar-3.3.1/fullcalendar.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style type="text/css">
+        [ng\:cloak], [ng-cloak], .ng-cloak {
+            display: none !important;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.3.1/fullcalendar.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js" type="text/javascript"></script>
+    <script src="js/app.js" type="text/javascript"></script>
+
+    <script>
+
+        $(document).ready(function() {
+
+
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,listWeek'
+                },
+                defaultDate: '2017-04-15',
+                navLinks: true, // can click day/week names to navigate views
+                editable: true,
+                eventLimit: true, // allow "more" link when too many events
+                events: []
+            });
+
+
+            var checkbox = function(){
+                $.getJSON( "/schedule/1", function( data ) {
+                    $("#sunday").prop('checked',data.sunday);
+                    $("#monday").prop('checked',data.monday);
+                    $("#tuesday").prop('checked',data.tuesday);
+                    $("#wednesday").prop('checked',data.wednesday);
+                    $("#thursday").prop('checked',data.thursday);
+                    $("#friday").prop('checked',data.friday);
+                    $("#saturday").prop('checked',data.saturday);
+                });
+            };
+
+            checkbox();
+
+
+            $.getJSON( "/pillrecords/1/events", function( data ) {
+                $('#calendar').fullCalendar('addEventSource', data);
+            });
+            $.getJSON( "/schedule/1/events", function( data ) {
+                $('#calendar').fullCalendar('addEventSource', data);
+            });
+
+            var elems = document.getElementsByClassName("checkbox-custom");
+            for (var i = 0; i < elems.length; i++) {
+                elems[i].addEventListener("click", function (e) {
+                    var day;
+                    if(e.target){
+                        day = e.target.name;
+                        console.log(day);
+                    }
+                    $.post( "/schedule/1/day/"+day, function( data ) {
+                        console.log(data);
+                    });
+                    $.getJSON("/schedule/1/events", function (data) {
+                        $('#calendar').fullCalendar('removeEventSources');
+                        setTimeout(function(){
+                            $.getJSON( "/pillrecords/1/events", function( data ) {
+                                $('#calendar').fullCalendar('addEventSource', data);
+                            });
+                            $.getJSON( "/schedule/1/events", function( data ) {
+                                $('#calendar').fullCalendar('addEventSource', data);
+                            });
+                        }, 100);
+                    });
+                })
+            }
+
+        });
+
+    </script>
+    <style>
+
+        body {
+            padding: 0;
+            font-size: 16px;
+        }
+
+        #calendar {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+
+<body ng-app="app">
+    <div id="header"><h1>VITAL</h1></div>
+    <h2>Schedule</h2>
+    <div id="schedule">
+        <div class="squaredFour">
+            <input id="sunday" class="checkbox-custom" name="sunday" type="checkbox"/>
+            <label for="sunday"></label>
+            <h3>Sunday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="monday" class="checkbox-custom" name="monday" type="checkbox"/>
+            <label for="monday"></label>
+            <h3>Monday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="tuesday" class="checkbox-custom" name="tuesday" type="checkbox"/>
+            <label for="tuesday"></label>
+            <h3>Tuesday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="wednesday" class="checkbox-custom" name="wednesday" type="checkbox"/>
+            <label for="wednesday"></label>
+            <h3>Wednesday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="thursday" class="checkbox-custom" name="thursday" type="checkbox"/>
+            <label for="thursday"></label>
+            <h3>Thursday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="friday" class="checkbox-custom" name="friday" type="checkbox"/>
+            <label for="friday"></label>
+            <h3>Friday</h3>
+        </div>
+        <div class="squaredFour">
+            <input id="saturday" class="checkbox-custom" name="friday" type="checkbox"/>
+            <label for="saturday"></label>
+            <h3>Saturday</h3>
+        </div>
+    </div>
+    <div id='calendar'></div>
+</body>
+</html>
